@@ -1,0 +1,5 @@
+{
+  "name": "DTU Lec-Editor: The curriculum design is based on unified departmental data.",
+  "description": "A platform that connects with the Proeditor system within a comprehensive ecosystem to manage engineering program accreditation, with features such as strategic alignment, curriculum mapping, interactive diagrams, faculty profiles, and AI-based quality assurance via Gemini.",
+  "requestFramePermissions": []
+}
