@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play } from 'lucide-react';
+import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play, AlertTriangle } from 'lucide-react';
 import { Language } from '../types';
 
 interface Props {
@@ -43,7 +43,7 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
 
             <div className="relative z-10 max-w-5xl w-full flex flex-col items-center">
                 {/* Header */}
-                <div className="text-center mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+                <div className="text-center mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
                     <div className="inline-flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-full px-4 py-1.5 mb-6 backdrop-blur-md">
                         <ShieldCheck size={16} className="text-emerald-400" />
                         <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">DTU Accreditation System</span>
@@ -59,7 +59,7 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
                 </div>
 
                 {/* Steps Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-10">
                     {steps.map((step, idx) => (
                         <div 
                             key={idx} 
@@ -79,6 +79,19 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
                     ))}
                 </div>
 
+                {/* Local Storage Warning */}
+                <div className="bg-amber-900/20 border border-amber-700/30 p-4 rounded-xl max-w-2xl mb-8 flex items-start gap-3 text-amber-200/80 animate-in fade-in slide-in-from-bottom-2 duration-1000 delay-300">
+                    <AlertTriangle size={20} className="shrink-0 mt-0.5 text-amber-400" />
+                    <p className="text-xs leading-relaxed">
+                        <strong className="text-amber-300 block mb-1">
+                            {language === 'vi' ? 'Lưu ý quan trọng:' : 'Important Note:'}
+                        </strong>
+                        {language === 'vi' 
+                            ? 'Dữ liệu được lưu trữ trực tiếp trên trình duyệt của máy tính này (Local Storage). Nếu bạn chuyển sang dùng máy tính khác, vui lòng XUẤT toàn bộ dữ liệu (File JSON/ZIP) và mang theo để nhập lại.'
+                            : 'Data is stored locally in this browser (Local Storage). If you switch computers, please EXPORT all data (JSON/ZIP) and take it with you to import on the new machine.'}
+                    </p>
+                </div>
+
                 {/* Action */}
                 <button 
                     onClick={onStart}
@@ -92,7 +105,7 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
                 </button>
 
                 <div className="mt-8 text-slate-600 text-xs font-mono">
-                    v1.2.0 • Powered by DTU & Gemini AI
+                    v1.3.0 • Powered by DTU & Gemini AI
                 </div>
             </div>
         </div>
