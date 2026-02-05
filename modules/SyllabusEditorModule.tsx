@@ -5,14 +5,13 @@ import { TRANSLATIONS } from '../constants';
 import { 
   Search, BookOpen, FileText, Upload, Sparkles, Plus, Trash2, 
   Download, Info, Check, Library, 
-  Clock, Settings2, Star, FileJson, FileType,
+  Clock, Star, FileJson, FileType,
   ChevronDown, Target, CheckSquare, Square, X, Percent, Bot,
   Layers, AlertCircle, Hash
 } from 'lucide-react';
 import { translateSyllabus } from '../services/geminiService';
 import { downloadSingleSyllabus } from '../services/MoetSyllabus';
 import AILoader from '../components/AILoader';
-import SyllabusConfigModule from './SyllabusConfigModule';
 
 interface EditorProps {
     course: Course;
@@ -476,7 +475,7 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
     const handleJsonPasteImport = () => {
         try {
             // Explicitly cast jsonText to string to avoid unknown type errors
-            const textToParse = typeof jsonText === 'string' ? jsonText : String((jsonText as unknown) || "");
+            const textToParse = String(jsonText || "");
             if (!textToParse) throw new Error("Input is empty");
             
             const data: any = JSON.parse(textToParse);
@@ -951,14 +950,10 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
                 <button onClick={() => setTab('syllabus')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 ${tab === 'syllabus' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-50'}`}>
                     <FileText size={16}/> {t.syllabusTab}
                 </button>
-                <button onClick={() => setTab('config')} className={`px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 ${tab === 'config' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-500 hover:bg-slate-50'}`}>
-                    <Settings2 size={16}/> {t.configSyllabus}
-                </button>
             </div>
 
             {/* Content Area */}
             {tab === 'syllabus' && renderSyllabus()}
-            {tab === 'config' && <SyllabusConfigModule state={state} updateState={updateState} />}
         </div>
     );
 };
