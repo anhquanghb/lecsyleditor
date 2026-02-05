@@ -561,7 +561,7 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
             setJsonText('');
             alert(language === 'vi' ? "Cập nhật dữ liệu từ AI thành công!" : "Successfully updated syllabus from AI!");
     
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error(error);
             const msg = error instanceof Error ? error.message : String(error);
             alert(`Invalid JSON format. Please check your input. ${msg}`);
