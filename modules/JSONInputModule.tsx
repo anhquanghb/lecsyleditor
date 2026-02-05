@@ -200,6 +200,30 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
       }
   };
 
+  // --- Logic: Full JSON Export (Backup) ---
+  const handleFullJsonExport = () => {
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `DTU_Full_Backup_${dateStr}.json`;
+      
+      // Clean sensitive data before export
+      const exportState = { 
+          ...state, 
+          currentUser: null,
+          geminiConfig: {
+              ...state.geminiConfig,
+              apiKey: undefined // Don't export API keys
+          }
+      };
+      
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportState, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", filename);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+  };
+
   // --- Logic: Import CV/Syllabus (Existing) ---
   const processImport = () => {
     setError(null);
@@ -914,21 +938,31 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
             <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <Database size={16} /> {language === 'vi' ? 'Dữ liệu toàn hệ thống' : 'Full System Data'}
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button onClick={handleSmartZipExport} disabled={isZipping} className="p-4 bg-white border border-slate-200 rounded-xl hover:border-emerald-300 hover:shadow-md transition-all flex items-center gap-4 group text-left disabled:opacity-70 disabled:cursor-not-allowed">
                     <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                         {isZipping ? <Loader2 size={20} className="animate-spin"/> : <Archive size={20}/>}
                     </div>
                     <div>
-                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Xuất dữ liệu' : 'Export Data'}</span>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Xuất ZIP (Files)' : 'Export ZIP (Files)'}</span>
                         <span className="text-[10px] text-slate-400">
                             {isZipping 
                                 ? 'Zipping...' 
                                 : (currentUser?.role !== 'ADMIN' && faculties.find(f => f.email === currentUser?.email) 
-                                    ? (language === 'vi' ? 'Hồ sơ cá nhân (ZIP)' : 'Personal Profile (ZIP)') 
-                                    : 'Individual JSON Files (ZIP)')
+                                    ? (language === 'vi' ? 'Hồ sơ cá nhân' : 'Personal Profile') 
+                                    : (language === 'vi' ? 'Thư mục ZIP chứa từng file riêng lẻ để gửi cho trưởng bộ môn (Sau khi chỉnh sửa xong đề cương và CV)' : 'Individual JSON Files'))
                             }
                         </span>
+                    </div>
+                </button>
+
+                <button onClick={handleFullJsonExport} className="p-4 bg-white border border-slate-200 rounded-xl hover:border-amber-300 hover:shadow-md transition-all flex items-center gap-4 group text-left">
+                    <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                        <FileJson size={20}/>
+                    </div>
+                    <div>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Sao lưu (Full JSON)' : 'Full Backup (JSON)'}</span>
+                        <span className="text-[10px] text-slate-400">{language === 'vi' ? 'Dùng để chuyển dữ liệu sang máy tính khác hoặc sao lưu phiên làm việc' : 'Use for machine transfer'}</span>
                     </div>
                 </button>
                 
@@ -937,7 +971,7 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
                         <Upload size={20}/>
                     </div>
                     <div>
-                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu' : 'Import Full System'}</span>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu để bắt đầu thao tác' : 'Import Full System'}</span>
                         <span className="text-[10px] text-slate-400">JSON Format (Restore)</span>
                     </div>
                     <input type="file" ref={jsonImportRef} className="hidden" accept=".json" onChange={handleFileSelect} />
