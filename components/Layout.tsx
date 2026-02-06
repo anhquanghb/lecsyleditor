@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { TRANSLATIONS } from '../constants';
 import { AppState, Language } from '../types';
-import { Settings, Users, LogOut, ShieldCheck, Menu, X, ChevronLeft, ChevronRight, UserCog, FileJson, Briefcase } from 'lucide-react';
+import { Settings, Users, LogOut, ShieldCheck, Menu, X, ChevronLeft, ChevronRight, UserCog, FileJson, Briefcase, Bot } from 'lucide-react';
 
 interface LayoutProps {
   state: AppState;
@@ -249,6 +249,15 @@ const Layout: React.FC<LayoutProps> = ({ state, setLanguage, currentModule, setC
           </div>
           
           <div className="flex items-center gap-3">
+             <a 
+                href="https://gemini.google.com/gem/1p4fb_7cYFFi0ryyr0IyMyVbdNSH0lXsu?usp=sharing"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden sm:flex bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider items-center gap-2 border border-indigo-100 shadow-sm hover:bg-indigo-100 transition-colors"
+             >
+                <Bot size={14} /> {language === 'vi' ? 'Trợ lý ảo' : 'AI Assistant'}
+             </a>
+
              <div className="hidden sm:flex bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider items-center gap-2 border border-emerald-100 shadow-sm">
                <ShieldCheck size={14} /> Duy Tan University 2026
              </div>
