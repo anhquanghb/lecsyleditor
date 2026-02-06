@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play, AlertTriangle } from 'lucide-react';
+import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play, AlertTriangle, Bot, ExternalLink } from 'lucide-react';
 import { Language } from '../types';
 
 interface Props {
@@ -92,17 +92,30 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
                     </p>
                 </div>
 
-                {/* Action */}
-                <button 
-                    onClick={onStart}
-                    className="group relative px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-lg transition-all shadow-lg shadow-indigo-900/20 hover:shadow-indigo-600/40 flex items-center gap-3 animate-in fade-in duration-1000 delay-500"
-                >
-                    <span>{language === 'vi' ? "Bắt đầu làm việc" : "Start Working"}</span>
-                    <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                    
-                    {/* Button Glow Effect */}
-                    <div className="absolute inset-0 rounded-xl ring-2 ring-white/20 group-hover:ring-white/40 transition-all"></div>
-                </button>
+                {/* Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in duration-1000 delay-500">
+                    <button 
+                        onClick={onStart}
+                        className="group relative px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-lg transition-all shadow-lg shadow-indigo-900/20 hover:shadow-indigo-600/40 flex items-center gap-3"
+                    >
+                        <span>{language === 'vi' ? "Bắt đầu làm việc" : "Start Working"}</span>
+                        <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                        
+                        {/* Button Glow Effect */}
+                        <div className="absolute inset-0 rounded-xl ring-2 ring-white/20 group-hover:ring-white/40 transition-all"></div>
+                    </button>
+
+                    <a 
+                        href="https://gemini.google.com/gem/1p4fb_7cYFFi0ryyr0IyMyVbdNSH0lXsu?usp=sharing"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group relative px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-indigo-300 hover:text-indigo-200 rounded-xl font-bold text-lg transition-all border border-slate-700 hover:border-indigo-500/50 flex items-center gap-3 backdrop-blur-md"
+                    >
+                        <Bot size={24} />
+                        <span>{language === 'vi' ? "Trợ lý ảo AI" : "AI Assistant"}</span>
+                        <ExternalLink size={16} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                    </a>
+                </div>
 
                 <div className="mt-8 text-slate-600 text-xs font-mono">
                     v1.3.0 • Powered by DTU & Gemini AI
