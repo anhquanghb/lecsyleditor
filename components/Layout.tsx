@@ -34,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ state, setLanguage, currentModule, setC
     // { id: 'flowchart', icon: 'fa-diagram-project', label: t.flowchart },
     // { id: 'departments', icon: 'fa-sitemap', label: t.departments },
     { id: 'syllabus', icon: 'fa-file-lines', label: t.syllabus },
-    // { id: 'library', icon: 'fa-book', label: t.library },
+    { id: 'library', icon: 'fa-book', label: t.library },
     { id: 'faculty', icon: 'fa-users', label: t.faculty },
     // { id: 'facilities', icon: 'fa-building', label: t.facilities },
     // { id: 'analytics', icon: 'fa-brain', label: t.analytics },
