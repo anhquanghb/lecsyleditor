@@ -971,7 +971,7 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
                                 ? 'Zipping...' 
                                 : (currentUser?.role !== 'ADMIN' && faculties.find(f => f.email === currentUser?.email) 
                                     ? (language === 'vi' ? 'Hồ sơ cá nhân' : 'Personal Profile') 
-                                    : (language === 'vi' ? 'Thư mục ZIP chứa từng file riêng lẻ để gửi cho trưởng bộ môn (Sau khi chỉnh sửa xong đề cương và CV)' : 'Individual JSON Files'))
+                                    : (language === 'vi' ? 'Thư mục ZIP để gửi cho quản lý chương trình (Sau khi chỉnh sửa xong đề cương và CV)' : 'Individual JSON Files'))
                             }
                         </span>
                     </div>
