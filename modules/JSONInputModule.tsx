@@ -939,6 +939,27 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
                 <Database size={16} /> {language === 'vi' ? 'Dữ liệu toàn hệ thống' : 'Full System Data'}
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <label className="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-4 group cursor-pointer text-left">
+                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                        <Upload size={20}/>
+                    </div>
+                    <div>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu để bắt đầu thao tác' : 'Import Full System'}</span>
+                        <span className="text-[10px] text-slate-400">JSON Format (Restore)</span>
+                    </div>
+                    <input type="file" ref={jsonImportRef} className="hidden" accept=".json" onChange={handleFileSelect} />
+                </label>
+              
+                <button onClick={handleFullJsonExport} className="p-4 bg-white border border-slate-200 rounded-xl hover:border-amber-300 hover:shadow-md transition-all flex items-center gap-4 group text-left">
+                    <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
+                        <FileJson size={20}/>
+                    </div>
+                    <div>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Sao lưu (Full JSON)' : 'Full Backup (JSON)'}</span>
+                        <span className="text-[10px] text-slate-400">{language === 'vi' ? 'Dùng để chuyển dữ liệu sang máy tính khác hoặc sao lưu phiên làm việc' : 'Use for machine transfer'}</span>
+                    </div>
+                </button>
+                
                 <button onClick={handleSmartZipExport} disabled={isZipping} className="p-4 bg-white border border-slate-200 rounded-xl hover:border-emerald-300 hover:shadow-md transition-all flex items-center gap-4 group text-left disabled:opacity-70 disabled:cursor-not-allowed">
                     <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
                         {isZipping ? <Loader2 size={20} className="animate-spin"/> : <Archive size={20}/>}
@@ -955,27 +976,6 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
                         </span>
                     </div>
                 </button>
-
-                <button onClick={handleFullJsonExport} className="p-4 bg-white border border-slate-200 rounded-xl hover:border-amber-300 hover:shadow-md transition-all flex items-center gap-4 group text-left">
-                    <div className="w-10 h-10 bg-amber-50 rounded-full flex items-center justify-center text-amber-600 group-hover:scale-110 transition-transform">
-                        <FileJson size={20}/>
-                    </div>
-                    <div>
-                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Sao lưu (Full JSON)' : 'Full Backup (JSON)'}</span>
-                        <span className="text-[10px] text-slate-400">{language === 'vi' ? 'Dùng để chuyển dữ liệu sang máy tính khác hoặc sao lưu phiên làm việc' : 'Use for machine transfer'}</span>
-                    </div>
-                </button>
-                
-                <label className="p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-4 group cursor-pointer text-left">
-                    <div className="w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
-                        <Upload size={20}/>
-                    </div>
-                    <div>
-                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu để bắt đầu thao tác' : 'Import Full System'}</span>
-                        <span className="text-[10px] text-slate-400">JSON Format (Restore)</span>
-                    </div>
-                    <input type="file" ref={jsonImportRef} className="hidden" accept=".json" onChange={handleFileSelect} />
-                </label>
             </div>
         </div>
 
