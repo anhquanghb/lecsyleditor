@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { AppState, MoetSubBlock } from './types';
+import { AppState, MoetSubBlock, TeachingMethod, AssessmentMethod } from './types';
 import { INITIAL_STATE, CODE_VERSION } from './constants';
 import Layout from './components/Layout';
 import StrategyModule from './modules/StrategyModule';
@@ -145,7 +145,7 @@ const App: React.FC = () => {
       e.target.value = '';
   };
 
-  // --- REPAIR DATA LOGIC (Moved from Settings to be available globally) ---
+  // --- REPAIR DATA LOGIC ---
   const handleRepairData = () => {
     // 1. Repair Faculty Titles (Standardize)
     const newFacultyTitles = {
@@ -155,22 +155,18 @@ const App: React.FC = () => {
         positions: state.facultyTitles?.positions || INITIAL_STATE.facultyTitles.positions,
     };
 
-    // 2. Repair Configs
-    const newTeachingMethods = (state.teachingMethods && state.teachingMethods.length > 0)
-        ? state.teachingMethods
-        : INITIAL_STATE.teachingMethods;
-
-    const newAssessmentMethods = (state.assessmentMethods && state.assessmentMethods.length > 0)
-        ? state.assessmentMethods
-        : INITIAL_STATE.assessmentMethods;
-
+    // 2. Logic for Teaching & Assessment Methods Synchronization
+    // Default to existing, but check for differences to trigger sync
+    let newTeachingMethods = (state.teachingMethods && state.teachingMethods.length > 0) ? state.teachingMethods : INITIAL_STATE.teachingMethods;
+    let newAssessmentMethods = (state.assessmentMethods && state.assessmentMethods.length > 0) ? state.assessmentMethods : INITIAL_STATE.assessmentMethods;
+    
     // 3. Repair Organization (Schools, Faculties, Departments)
     const newSchools = Array.isArray(state.academicSchools) ? state.academicSchools : (INITIAL_STATE.academicSchools || []);
     const newAcademicFaculties = Array.isArray(state.academicFaculties) ? state.academicFaculties : (INITIAL_STATE.academicFaculties || []);
     const newDepartments = Array.isArray(state.departments) ? state.departments : (INITIAL_STATE.departments || []);
 
     // 4. Repair Courses (Add CLOs, Department links, etc.)
-    const newCourses = (state.courses || []).map(c => ({
+    let newCourses = (state.courses || []).map(c => ({
         ...c,
         isEssential: c.isEssential ?? false,
         isAbet: c.isAbet !== undefined ? c.isAbet : (c.isEssential ?? false),
@@ -188,6 +184,96 @@ const App: React.FC = () => {
         cloMap: Array.isArray(c.cloMap) ? c.cloMap : [],
         coRequisites: c.coRequisites || []
     }));
+
+    // --- SMART SYNC LOGIC FOR METHODS ---
+    const standardizeMethods = confirm(
+        state.language === 'vi' 
+        ? "Hệ thống phát hiện phiên bản mới của Phương pháp Giảng dạy & Đánh giá (chi tiết giờ học, cấu hình thi). Bạn có muốn đồng bộ hóa toàn bộ dữ liệu môn học theo chuẩn mới không?" 
+        : "System detected a new version of Teaching & Assessment Methods (detailed hours, exam config). Do you want to synchronize all course data to the new standard?"
+    );
+
+    if (standardizeMethods) {
+        // A. Teaching Methods Sync
+        const standardTeaching = INITIAL_STATE.teachingMethods;
+        const currentTeaching = state.teachingMethods || [];
+        
+        // Map Old Code -> New ID
+        const teachCodeMap = new Map<string, string>();
+        standardTeaching.forEach(tm => teachCodeMap.set(tm.code, tm.id));
+
+        // B. Assessment Methods Sync
+        const standardAssessment = INITIAL_STATE.assessmentMethods;
+        const currentAssessment = state.assessmentMethods || [];
+        
+        // Map Old Name (English or Vietnamese) -> New ID
+        // Note: Assessment methods often lack a 'code', so we use name matching
+        const assessNameMap = new Map<string, string>();
+        standardAssessment.forEach(am => {
+            assessNameMap.set(am.name.en.toLowerCase(), am.id);
+            assessNameMap.set(am.name.vi.toLowerCase(), am.id);
+        });
+
+        // Apply to Courses
+        newCourses = newCourses.map(course => {
+            // 1. Update Topic Activities (Teaching Methods)
+            const newTopics = course.topics.map(topic => ({
+                ...topic,
+                activities: topic.activities.map(act => {
+                    const oldMethod = currentTeaching.find(m => m.id === act.methodId);
+                    if (!oldMethod) return act; // ID might already be correct or unknown
+
+                    // Try to map by Code
+                    const newId = teachCodeMap.get(oldMethod.code);
+                    if (newId) return { ...act, methodId: newId };
+
+                    // Fallback mapping if code not found: Map to 'tm1' (LEC) or 'tm2' (LAB) based on category
+                    const fallbackId = oldMethod.category === 'PRACTICE' ? 'tm2' : 'tm1';
+                    return { ...act, methodId: fallbackId };
+                })
+            }));
+
+            // 2. Update Assessment Plan
+            const newAssessmentPlan = course.assessmentPlan.map(item => {
+                const oldMethod = currentAssessment.find(m => m.id === item.methodId);
+                if (!oldMethod) return item;
+
+                // Try to map by Name
+                const newId = assessNameMap.get(oldMethod.name.en.toLowerCase()) || assessNameMap.get(oldMethod.name.vi.toLowerCase());
+                // Fallback: If 'project' -> 'am7', 'exam' -> 'am6', else keep or default 'am1'
+                const fallbackId = newId || 'am1'; 
+                
+                return { ...item, methodId: fallbackId };
+            });
+
+            // 3. Update CLO Map (Both Teaching and Assessment IDs)
+            const newCloMap = course.cloMap.map(clo => ({
+                ...clo,
+                teachingMethodIds: clo.teachingMethodIds.map(mid => {
+                    const oldMethod = currentTeaching.find(m => m.id === mid);
+                    if (!oldMethod) return mid;
+                    const newId = teachCodeMap.get(oldMethod.code);
+                    return newId || (oldMethod.category === 'PRACTICE' ? 'tm2' : 'tm1');
+                }),
+                assessmentMethodIds: clo.assessmentMethodIds.map(aid => {
+                    const oldMethod = currentAssessment.find(m => m.id === aid);
+                    if (!oldMethod) return aid;
+                    const newId = assessNameMap.get(oldMethod.name.en.toLowerCase()) || assessNameMap.get(oldMethod.name.vi.toLowerCase());
+                    return newId || 'am1';
+                })
+            }));
+
+            return { 
+                ...course, 
+                topics: newTopics, 
+                assessmentPlan: newAssessmentPlan, 
+                cloMap: newCloMap 
+            };
+        });
+
+        // Finally, replace definitions with standard ones
+        newTeachingMethods = standardTeaching;
+        newAssessmentMethods = standardAssessment;
+    }
 
     // 5. Repair Faculties
     const newFaculties = (state.faculties || []).map(f => ({
@@ -283,10 +369,17 @@ const App: React.FC = () => {
 
   // Cover Page Guard
   if (showCoverPage) {
-      return <CoverPage onStart={() => {
+      return <CoverPage 
+        onStart={() => {
           setShowCoverPage(false);
           setCurrentModule('json-input');
-      }} language={state.language} />;
+        }}
+        onNavigate={(mod) => {
+            setShowCoverPage(false);
+            setCurrentModule(mod);
+        }}
+        language={state.language} 
+      />;
   }
 
   const renderModule = () => {
