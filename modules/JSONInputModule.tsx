@@ -944,8 +944,8 @@ const JSONInputModule: React.FC<Props> = ({ state, updateState, onExport }) => {
                         <Upload size={20}/>
                     </div>
                     <div>
-                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu để bắt đầu thao tác' : 'Import Full System'}</span>
-                        <span className="text-[10px] text-slate-400">JSON Format (Restore)</span>
+                        <span className="font-bold text-slate-800 block">{language === 'vi' ? 'Nhập toàn bộ dữ liệu' : 'Import Full System'}</span>
+                        <span className="text-[10px] text-slate-400">{language === 'vi' ? 'Dữ liệu định dạng JSON, để bắt đầu thao tác, hoặc phục hồi dữ liệu cũ' : 'JSON Format (Restore)'}</span>
                     </div>
                     <input type="file" ref={jsonImportRef} className="hidden" accept=".json" onChange={handleFileSelect} />
                 </label>
