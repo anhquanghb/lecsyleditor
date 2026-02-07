@@ -97,7 +97,7 @@ const CoverPage: React.FC<Props> = ({ onStart, onNavigate, language }) => {
                             {language === 'vi' ? 'Lưu ý quan trọng:' : 'Important Note:'}
                         </strong>
                         {language === 'vi' 
-                            ? 'Dữ liệu được lưu trữ trực tiếp trên trình duyệt của máy tính này (Local Storage). Nếu bạn chuyển sang dùng máy tính khác, vui lòng XUẤT toàn bộ dữ liệu (File JSON/ZIP) và mang theo để nhập lại.'
+                            ? 'Dữ liệu được lưu trữ trực tiếp trên trình duyệt của máy tính này, không có ở trên máy chủ. Vui lòng Xuất dữ liệu (Sao lưu Full JSON) mỗi phiên làm việc và lưu ở thư mục riêng của quý thầy cô, mỗi file là một phiên bản để quý thầy cô tìm lại dữ liệu cũ khi cần. Nếu quý thầy cô chuyển sang dùng máy tính khác, hãy mang file này theo để nhập lại.'
                             : 'Data is stored locally in this browser (Local Storage). If you switch computers, please EXPORT all data (JSON/ZIP) and take it with you to import on the new machine.'}
                     </p>
                 </div>
