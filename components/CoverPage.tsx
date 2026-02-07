@@ -1,35 +1,39 @@
 
 import React from 'react';
-import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play, AlertTriangle, Bot, ExternalLink } from 'lucide-react';
+import { ArrowRight, FileJson, UserCog, Archive, ShieldCheck, Play, AlertTriangle, Bot, ExternalLink, MousePointer2 } from 'lucide-react';
 import { Language } from '../types';
 
 interface Props {
     onStart: () => void;
+    onNavigate: (module: string) => void;
     language: Language;
 }
 
-const CoverPage: React.FC<Props> = ({ onStart, language }) => {
+const CoverPage: React.FC<Props> = ({ onStart, onNavigate, language }) => {
     const steps = [
         {
             icon: <FileJson size={32} className="text-blue-500" />,
             title: language === 'vi' ? "Bước 1: Nhập dữ liệu" : "Step 1: Import Data",
             desc: language === 'vi' 
                 ? "Nhập toàn bộ dữ liệu JSON do trưởng bộ môn gửi (trong phần Nhập xuất JSON)."
-                : "Import the full JSON data sent by the Head of Department (in the JSON Input/Output section)."
+                : "Import the full JSON data sent by the Head of Department (in the JSON Input/Output section).",
+            targetModule: 'json-input'
         },
         {
             icon: <UserCog size={32} className="text-purple-500" />,
             title: language === 'vi' ? "Bước 2: Cập nhật" : "Step 2: Update",
             desc: language === 'vi'
                 ? "Sửa đề cương và CV giảng viên."
-                : "Edit the syllabus and Faculty CV."
+                : "Edit the syllabus and Faculty CV.",
+            targetModule: 'syllabus'
         },
         {
             icon: <Archive size={32} className="text-emerald-500" />,
             title: language === 'vi' ? "Bước 3: Xuất & Gửi lại" : "Step 3: Export & Return",
             desc: language === 'vi'
                 ? "Xuất toàn bộ dữ liệu và gửi lại cho trưởng bộ môn."
-                : "Export all data and send it back to the Head of Department."
+                : "Export all data and send it back to the Head of Department.",
+            targetModule: 'json-input'
         }
     ];
 
@@ -63,18 +67,24 @@ const CoverPage: React.FC<Props> = ({ onStart, language }) => {
                     {steps.map((step, idx) => (
                         <div 
                             key={idx} 
-                            className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-8 rounded-2xl hover:bg-slate-800/60 transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10"
+                            onClick={() => onNavigate(step.targetModule)}
+                            className="bg-slate-800/40 backdrop-blur-md border border-slate-700/50 p-8 rounded-2xl hover:bg-slate-800/60 transition-all duration-300 group hover:-translate-y-1 hover:shadow-2xl hover:shadow-indigo-500/10 cursor-pointer relative overflow-hidden"
                             style={{ animationDelay: `${idx * 150}ms` }}
                         >
                             <div className="bg-slate-900/50 w-16 h-16 rounded-2xl flex items-center justify-center mb-6 border border-slate-700 group-hover:border-slate-600 transition-colors">
                                 {step.icon}
                             </div>
-                            <h3 className="text-xl font-bold mb-3 text-slate-100 group-hover:text-white transition-colors">
+                            <h3 className="text-xl font-bold mb-3 text-slate-100 group-hover:text-white transition-colors flex items-center gap-2">
                                 {step.title}
                             </h3>
                             <p className="text-sm text-slate-400 leading-relaxed">
                                 {step.desc}
                             </p>
+                            
+                            {/* Hover Indicator */}
+                            <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 text-slate-500 bg-slate-900/50 p-2 rounded-full border border-slate-700">
+                                <ArrowRight size={16} />
+                            </div>
                         </div>
                     ))}
                 </div>
