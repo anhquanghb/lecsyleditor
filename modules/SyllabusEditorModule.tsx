@@ -1,13 +1,12 @@
-
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { AppState, Course, CourseTopic, AssessmentItem, LibraryResource, CloMapping, CoverageLevel, SO, Faculty, AssessmentMethod } from '../types';
+import { AppState, Course, CourseTopic, AssessmentItem, LibraryResource, CloMapping, CoverageLevel, SO, Faculty, AssessmentMethod, IRM } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { 
   Search, BookOpen, FileText, Upload, Sparkles, Plus, Trash2, 
   Download, Info, Check, Library, 
   Clock, Star, FileJson, FileType,
   ChevronDown, Target, CheckSquare, Square, X, Percent, Bot,
-  Layers, AlertCircle, Hash
+  Layers, AlertCircle, Hash, ChevronRight, ChevronUp
 } from 'lucide-react';
 import { translateSyllabus } from '../services/geminiService';
 import { downloadSingleSyllabus } from '../services/MoetSyllabus';
@@ -276,6 +275,7 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
     // Editors State
     const [editingTopicTime, setEditingTopicTime] = useState<string | null>(null);
     const [editingTopicReadings, setEditingTopicReadings] = useState<string | null>(null);
+    const [expandedSoId, setExpandedSoId] = useState<string | null>(null);
     
     // Material State
     const [isAddingMaterial, setIsAddingMaterial] = useState(false);
@@ -390,6 +390,55 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
             });
         }
         updateCourse({ cloMap: newMaps });
+    };
+
+    // --- GLOBAL MATRIX TOGGLES ---
+    const toggleGlobalSo = (soId: string) => {
+        updateState(prev => {
+            const currentMap = prev.courseSoMap || [];
+            const exists = currentMap.find(m => m.courseId === course.id && m.soId === soId);
+            let newMap;
+            if (exists) {
+                // Remove if exists
+                newMap = currentMap.filter(m => !(m.courseId === course.id && m.soId === soId));
+            } else {
+                // Add with default level 'I'
+                newMap = [...currentMap, { courseId: course.id, soId, level: IRM.I }];
+            }
+            return { ...prev, courseSoMap: newMap };
+        });
+    };
+
+    const toggleGlobalPi = (piId: string) => {
+        updateState(prev => {
+            const currentMap = prev.coursePiMap || [];
+            const exists = currentMap.find(m => m.courseId === course.id && m.piId === piId);
+            const newMap = exists 
+                ? currentMap.filter(m => !(m.courseId === course.id && m.piId === piId)) 
+                : [...currentMap, { courseId: course.id, piId }];
+            return { ...prev, coursePiMap: newMap };
+        });
+    };
+
+    const toggleGlobalPlo = (ploId: string) => {
+        updateState(prev => {
+            const currentMap = prev.generalInfo.moetInfo.courseObjectiveMap || [];
+            const key = `${course.id}|${ploId}`;
+            const newMap = currentMap.includes(key) 
+                ? currentMap.filter(k => k !== key) 
+                : [...currentMap, key];
+            
+            return {
+                ...prev,
+                generalInfo: {
+                    ...prev.generalInfo,
+                    moetInfo: {
+                        ...prev.generalInfo.moetInfo,
+                        courseObjectiveMap: newMap
+                    }
+                }
+            };
+        });
     };
 
     // --- CLO Management ---
@@ -561,8 +610,8 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
             setJsonText('');
             alert(language === 'vi' ? "Cập nhật dữ liệu từ AI thành công!" : "Successfully updated syllabus from AI!");
     
-        } catch (error: unknown) {
-            console.error(error as any);
+        } catch (error: any) {
+            console.error(error);
             const msg = error instanceof Error ? error.message : String(error);
             alert(`Invalid JSON format. Please check your input. ${msg}`);
         }
@@ -648,34 +697,76 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
                         </button>
                     </div>
 
-                    {/* Outcome Reference Panel (Show ALL for reference, highlight allocated) */}
-                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm">
+                    {/* Outcome Reference Panel (INTERACTIVE) */}
+                    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm shadow-sm">
                         <div className="flex items-center justify-between mb-3">
                             <div className="flex items-center gap-2 text-slate-500">
                                 <BookOpen size={14} />
                                 <span className="text-xs font-bold uppercase tracking-wide">
-                                    {language === 'vi' ? 'Tham chiếu: Chuẩn đầu ra Chương trình' : 'Reference: Program Outcomes'}
+                                    {language === 'vi' ? 'Tham chiếu & Liên kết Ma trận' : 'Matrix Mapping Reference'}
                                 </span>
                             </div>
                             <div className="flex gap-2 text-[10px]">
                                 <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-400">Available</span>
-                                <span className="px-2 py-0.5 rounded bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold">Allocated to Course</span>
+                                <span className="px-2 py-0.5 rounded bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold">Allocated (Matrix)</span>
                             </div>
                         </div>
                         
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-60 overflow-y-auto custom-scrollbar pr-2">
-                            {/* ABET SOs */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                            {/* ABET SOs with Collapsible PIs */}
                             {sos.length > 0 && (
                                 <div className="space-y-2">
-                                    <div className="text-[10px] font-black text-indigo-600 uppercase sticky top-0 bg-slate-50 py-1">ABET (SOs)</div>
+                                    <div className="text-[10px] font-black text-indigo-600 uppercase sticky top-0 bg-slate-50 py-1 z-10">ABET (SOs)</div>
                                     {sos.map(so => {
                                         const isAllocated = globalMatrixExpectations.soIds.has(so.id);
+                                        const isExpanded = expandedSoId === so.id;
+                                        
                                         return (
-                                            <div key={so.id} className={`p-2 rounded border text-xs ${isAllocated ? 'bg-indigo-50 border-indigo-200 shadow-sm' : 'bg-white border-slate-200 opacity-70 hover:opacity-100'}`}>
-                                                <div className="flex gap-2">
-                                                    <span className={`font-bold whitespace-nowrap ${isAllocated ? 'text-indigo-700' : 'text-slate-500'}`}>{so.code}</span>
-                                                    <span className="text-slate-600 leading-relaxed">{so.description[language]}</span>
+                                            <div key={so.id} className={`rounded-lg border transition-all ${isAllocated ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-200'}`}>
+                                                {/* SO Header Row */}
+                                                <div className="p-2 flex items-start gap-2 cursor-pointer hover:bg-slate-50/50" onClick={() => setExpandedSoId(isExpanded ? null : so.id)}>
+                                                    <div onClick={(e) => e.stopPropagation()}>
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={isAllocated} 
+                                                            onChange={() => toggleGlobalSo(so.id)}
+                                                            className="mt-1 w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                                                        />
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex justify-between items-center">
+                                                            <span className={`font-bold text-xs ${isAllocated ? 'text-indigo-700' : 'text-slate-600'}`}>{so.code}</span>
+                                                            <div className="text-slate-400">
+                                                                {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                                                            </div>
+                                                        </div>
+                                                        <p className="text-[10px] text-slate-500 line-clamp-2 leading-relaxed mt-0.5">{so.description[language]}</p>
+                                                    </div>
                                                 </div>
+
+                                                {/* Collapsible PIs */}
+                                                {isExpanded && so.pis && so.pis.length > 0 && (
+                                                    <div className="px-2 pb-2 space-y-1 animate-in slide-in-from-top-1">
+                                                        <div className="h-px bg-indigo-100 mb-2"></div>
+                                                        {so.pis.map(pi => {
+                                                            const isPiAllocated = globalMatrixExpectations.piIds.has(pi.id);
+                                                            return (
+                                                                <div key={pi.id} className={`flex items-start gap-2 p-1.5 rounded text-xs ml-4 ${isPiAllocated ? 'bg-indigo-100/50' : 'hover:bg-slate-50'}`}>
+                                                                    <input 
+                                                                        type="checkbox" 
+                                                                        checked={isPiAllocated}
+                                                                        onChange={() => toggleGlobalPi(pi.id)}
+                                                                        className="mt-0.5 w-3 h-3 rounded border-slate-300 text-indigo-600 focus:ring-0 cursor-pointer"
+                                                                    />
+                                                                    <div className="flex-1">
+                                                                        <span className="font-bold text-[10px] text-slate-600 mr-1">{pi.code}</span>
+                                                                        <span className="text-slate-500 text-[10px]">{pi.description[language]}</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })}
@@ -685,14 +776,20 @@ const SyllabusEditorModule: React.FC<EditorProps> = ({ course, state, updateStat
                             {/* MOET PLOs */}
                             {sortedObjectivesData.length > 0 && (
                                 <div className="space-y-2">
-                                    <div className="text-[10px] font-black text-emerald-600 uppercase sticky top-0 bg-slate-50 py-1">MOET (PLOs)</div>
+                                    <div className="text-[10px] font-black text-emerald-600 uppercase sticky top-0 bg-slate-50 py-1 z-10">MOET (PLOs)</div>
                                     {sortedObjectivesData.map(plo => {
                                         const isAllocated = courseMoetHighlights.has(plo.id);
                                         return (
-                                            <div key={plo.id} className={`p-2 rounded border text-xs ${isAllocated ? 'bg-emerald-50 border-emerald-200 shadow-sm' : 'bg-white border-slate-200 opacity-70 hover:opacity-100'}`}>
-                                                <div className="flex gap-2">
-                                                    <span className={`font-bold whitespace-nowrap ${isAllocated ? 'text-emerald-700' : 'text-slate-500'}`}>{plo.label}</span>
-                                                    <span className="text-slate-600 leading-relaxed">{plo.description}</span>
+                                            <div key={plo.id} className={`p-2 rounded-lg border text-xs flex items-start gap-2 transition-all ${isAllocated ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-200'}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isAllocated} 
+                                                    onChange={() => toggleGlobalPlo(plo.id)}
+                                                    className="mt-1 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                                                />
+                                                <div className="flex-1">
+                                                    <span className={`font-bold block ${isAllocated ? 'text-emerald-700' : 'text-slate-600'}`}>{plo.label}</span>
+                                                    <span className="text-slate-500 leading-relaxed text-[10px] block mt-0.5">{plo.description}</span>
                                                 </div>
                                             </div>
                                         );
